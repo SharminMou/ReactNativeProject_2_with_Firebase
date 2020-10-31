@@ -8,6 +8,7 @@ const NotificationScreen = (props) => {
       {(auth) => (
         <View style={styles.viewStyle}>
           <Header
+            backgroundColor = '#29435c'
             leftComponent={{
               icon: "menu",
               color: "#fff",
@@ -25,15 +26,15 @@ const NotificationScreen = (props) => {
               },
             }}
           />
-          <Card>
+          <Card containerStyle={{backgroundColor: '#d1d4c9'}}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Avatar
-                containerStyle={{ backgroundColor: "cyan" }}
+                containerStyle={{ backgroundColor: "#556e53" }}
                 rounded
                 icon={{
                   name: "thumbs-o-up",
                   type: "font-awesome",
-                  color: "black",
+                  color: "white",
                 }}
                 activeOpacity={1}
               />
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
   },
   viewStyle: {
     flex: 1,
+    backgroundColor: '#152a38',
   },
 });
 

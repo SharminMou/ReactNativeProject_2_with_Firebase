@@ -59,8 +59,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         alignSelf: "center",
         backgroundColor: '#d1d4c9',
-        width: 500,
-        height: 700,
       },
       cardLogoStyle: {
         marginVertical: 20, 

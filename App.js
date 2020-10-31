@@ -21,7 +21,7 @@ const AppDrawer = createDrawerNavigator();
 
 const AppDrawerScreen = () => {
   return (
-    <AppDrawer.Navigator>
+    <AppDrawer.Navigator drawerStyle = {{backgroundColor:'#29435c'}}>
       <AppDrawer.Screen name="Home" component={HomeTabScreen} />
       <AppDrawer.Screen name="Profile" component={ProfileScreen} />
     </AppDrawer.Navigator>
@@ -39,8 +39,8 @@ const HomeStackScreen = () => {
 
 const HomeTabScreen = () => {
   return (
-    <HomeTab.Navigator initialRouteName="Home">
-      <HomeTab.Screen
+    <HomeTab.Navigator initialRouteName="Home" barStyle = {{backgroundColor:'#29435c'}}>
+      <HomeTab.Screen 
         name="Home"
         component={HomeScreen}
         options={{

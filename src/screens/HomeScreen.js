@@ -1,19 +1,32 @@
-import React, { useState } from "react";
-import { ScrollView, View, StyleSheet } from "react-native";
-import {Card,Button,Text,Avatar,Input,Header} from "react-native-elements";
+import React, { useState, useEffect } from "react";
+import { ScrollView, View, StyleSheet, FlatList } from "react-native";
+import { Card, Button, Text, Avatar, Input, Header } from "react-native-elements";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { AuthContext } from "../providers/AuthProvider";
 import PostComponent from "../components/PostComponent";
+import { storeDataJSON, getDataJSON, removeData } from "../functions/AsynchronousStorageFunctions";
+import moment from "moment";
 
 const HomeScreen = (props) => {
-  const post =
-    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.";
+  const [postText, setPostText] = useState("");
+  const [postList, setPostList] = useState([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      setPostList(await getDataJSON('posts'));
+    }
+    getData();
+  }, [])
+
+   //await removeData("posts");
+
+  //getPosts();
   return (
     <AuthContext.Consumer>
       {(auth) => (
         <View style={styles.viewStyle}>
           <Header
-            backgroundColor = '#29435c'
+            backgroundColor='#29435c'
             leftComponent={{
               icon: "menu",
               color: "#fff",
@@ -31,33 +44,82 @@ const HomeScreen = (props) => {
               },
             }}
           />
-          <Card containerStyle = {{backgroundColor: '#d1d4c9' }}>
+          <Card containerStyle={{ backgroundColor: '#d1d4c9' }}>
             <Input
               placeholder="What's On Your Mind?"
               leftIcon={<Entypo name="pencil" size={24} color="#152a38" />}
+              onChangeText={function (currentInput) {
+                setPostText(currentInput);
+              }}
             />
-            <Button buttonStyle = {{borderColor: '#29435c'}}
-            title="Post" 
-            titleStyle = {{color: '#29435c'}}
-            type="outline" 
-            onPress={function () {}} />
+            <Button buttonStyle={{ borderColor: '#29435c' }}
+              title="Post"
+              titleStyle={{ color: '#29435c' }}
+              type="outline"
+              onPress={async () => {
+                if (postList != null) {
+                  setPostList(posts => [
+                    ...posts,
+                    {
+                      name: auth.CurrentUser.name,
+                      email: auth.CurrentUser.email,
+                      date: moment().format("DD MMM, YYYY"),
+                      post: postText,
+                      key: postText,
+                    },
+                  ]);
+                }
+                else {
+                  const arr = [];
+                  arr.push({
+                    name: auth.CurrentUser.name,
+                    email: auth.CurrentUser.email,
+                    date: moment().format("DD MMM, YYYY"),
+                    post: postText,
+                    key: postText,
+                  });
+                  setPostList(arr);
+                }
+                await storeDataJSON('posts', postList);
+                //alert("Post Successful!");
+                //setPostText("");
+
+              }} />
+            <Button buttonStyle={{ borderColor: '#29435c' }}
+              title="Delete Post"
+              titleStyle={{ color: '#29435c' }}
+              type="outline"
+              onPress = {async function(){
+                await removeData("Post");
+              }}
+            />
+
           </Card>
-          <ScrollView>
-          <PostComponent name = 'Mou' date = '31 Oct, 2020' post = 'Test Post'/>
-          </ScrollView>
+          <FlatList
+              data={postList}
+              renderItem={postItem => (
+                <PostComponent
+                  name={postItem.item.name}
+                  date={postItem.item.date}
+                  post={postItem.item.post}
+
+                />
+
+              )}
+            />
         </View>
       )}
     </AuthContext.Consumer>
-  );
+      );
 };
 
 const styles = StyleSheet.create({
-  textStyle: {
-    fontSize: 30,
+        textStyle: {
+        fontSize: 30,
     color: "blue",
   },
   viewStyle: {
-    flex: 1,
+        flex: 1,
     backgroundColor: '#152a38'
   },
 });

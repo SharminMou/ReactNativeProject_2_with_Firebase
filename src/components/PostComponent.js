@@ -5,7 +5,9 @@ import { AntDesign, Entypo } from "@expo/vector-icons";
 import { AuthContext } from "../providers/AuthProvider";
 
 const PostComponent = (props) => {
+    
     return (
+
         <View>
             <Card containerStyle={{ backgroundColor: '#d1d4c9' }}>
                 <View
@@ -22,7 +24,7 @@ const PostComponent = (props) => {
                     />
                     <Text h4Style={{ padding: 10 }} h4>
                         {props.name}
-                </Text>
+                    </Text>
                 </View>
                 <Text style={{ fontStyle: "italic" }}> Posted on {props.date}</Text>
                 <Text

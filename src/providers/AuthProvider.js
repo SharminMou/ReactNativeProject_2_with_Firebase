@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 const AuthContext = React.createContext();
 
 const AuthProvider = (props) =>{
-    const [CurrentUser, setCurrentUSer] = useState({});
+    const [CurrentUser, setCurrentUser] = useState({});
     const [IsLoggedIn, setIsLoggedIn] = useState(false);
 
     return(
         <AuthContext.Provider
             value={{
                 CurrentUser: CurrentUser,
-                setCurrentUSer: setCurrentUSer,
+                setCurrentUser: setCurrentUser,
                 IsLoggedIn: IsLoggedIn,
                 setIsLoggedIn: setIsLoggedIn,
             }}

@@ -18,6 +18,7 @@ const HomeStack = createStackNavigator();
 const AuthStack = createStackNavigator();
 const HomeTab = createMaterialBottomTabNavigator();
 const AppDrawer = createDrawerNavigator();
+const CommentOnPostStack = createStackNavigator();
 
 const AppDrawerScreen = () => {
   return (

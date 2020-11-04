@@ -3,9 +3,11 @@ import { View, ScrollView, StyleSheet, Image } from "react-native";
 import { Input, Button, Card, Tile, Text, Header, Avatar } from 'react-native-elements';
 import { MaterialIcons, Feather, AntDesign } from '@expo/vector-icons';
 import { AuthContext } from "../providers/AuthProvider";
+import ChoosePhotoComponent from "../components/ChoosePhotoComponent";
+import { removeData } from "../functions/AsynchronousStorageFunctions";
 
 const ProfileScreen = (props) => {
-  console.log(props);
+  //console.log(props);
   return (
     <AuthContext.Consumer>
       {(auth) => (
@@ -32,7 +34,8 @@ const ProfileScreen = (props) => {
 
 
           <View>
-            <Image source={require('../../assets/profile-photo.jpg')} style={styles.logoStyle} />
+            {/* <Image source={require('../../assets/profile-photo.jpg')} style={styles.logoStyle} /> */}
+            <ChoosePhotoComponent/>
             <Text style={{ fontSize: 30, color: '#152a38', marginBottom: 20 }}> {auth.CurrentUser.name} </Text>
           </View>
 
@@ -46,6 +49,11 @@ const ProfileScreen = (props) => {
             title=' Delete profile'
             titleStyle={{ color: '#d1d4c9' }}
             type='solid'
+            onPress= { function () {
+                removeData(auth.CurrentUser.email);
+                auth.setIsLoggedIn(false);
+                auth.setCurrentUser({});
+              }}
           />
         </View>
       )}

@@ -11,7 +11,8 @@ const PostScreen = (props) => {
     //console.log(props);
     const [commentText, setCommentText] = useState("");
     const [commentList, setCommentList] = useState([]);
-
+    const [notificationList, setNotificationList] = useState([]);
+    let notifyUser = props.route.params.email.concat("notify");
     const getCommentData = async () => {
         await getDataJSON(props.route.params.post).then((data) => {
             if (data == null) {
@@ -19,9 +20,21 @@ const PostScreen = (props) => {
             } else setCommentList(data);
         });
     };
+
+    const getNotificationData = async () => {
+        await getDataJSON(notifyUser).then((data) => {
+            if (data == null) {
+                setNotificationList([]);
+            } else setNotificationList(data);
+        });
+    };
+
     useEffect(() => {
         getCommentData();
     }, [])
+    useEffect(() => {
+        getNotificationData();
+    }, [notificationList])
 
     return (
         <AuthContext.Consumer>
@@ -99,18 +112,34 @@ const PostScreen = (props) => {
                                         },
                                     ];
 
-                                
                                     await storeDataJSON(props.route.params.post, arr).then(() => {
                                         setCommentList(arr);
                                     });
+
+                                    if (auth.CurrentUser.email != props.route.params.email) {
+                                        let arr2 = [
+                                            ...notificationList,
+                                            {
+                                                name: props.route.params.name,
+                                                email: props.route.params.email,
+                                                date: moment().format("DD MMM, YYYY"),
+                                                post: props.route.params.post,
+                                                notification: auth.CurrentUser.name.concat(" commented on your post"),
+                                                key: commentText,
+                                                type: "comment",
+                                            },
+                                        ];
+
+
+                                        await storeDataJSON(notifyUser, arr2).then(() => {
+                                            setNotificationList(arr2);
+                                        });
+                                    }
 
 
                                 }} />
 
                         </Card>
-
-
-
 
                     </View>
 
@@ -124,7 +153,6 @@ const PostScreen = (props) => {
                                 comment={commentItem.item.comment}
 
                             />
-
 
                         )}
                     />

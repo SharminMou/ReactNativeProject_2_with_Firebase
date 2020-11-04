@@ -12,6 +12,7 @@ import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import PostScreen from './src/screens/PostScreen';
 
 import {AuthContext, AuthProvider} from './src/providers/AuthProvider';
 const HomeStack = createStackNavigator();
@@ -29,11 +30,13 @@ const AppDrawerScreen = () => {
   );
 };
 
-const HomeStackScreen = () => {
+const HomePostStackScreen = () => {
   return(
     <HomeStack.Navigator initialRouteName = 'Home'>
-      <HomeStack.Screen name="Home" component={HomeScreen} />
+      <HomeStack.Screen name="Home" component={HomeScreen} options={{headerShown: false}} />
+      <HomeStack.Screen name="IndividualPost" component={PostScreen} options={{headerShown: false}} />
     </HomeStack.Navigator>
+
   );
 
 };
@@ -43,7 +46,7 @@ const HomeTabScreen = () => {
     <HomeTab.Navigator initialRouteName="Home" barStyle = {{backgroundColor:'#29435c'}}>
       <HomeTab.Screen 
         name="Home"
-        component={HomeScreen}
+        component={HomePostStackScreen}
         options={{
           tabBarLabel: "Home",
           tabBarIcon: ({ focused }) =>

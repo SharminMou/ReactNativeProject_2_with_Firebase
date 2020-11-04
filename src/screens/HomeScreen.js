@@ -11,14 +11,25 @@ const HomeScreen = (props) => {
   const [postText, setPostText] = useState("");
   const [postList, setPostList] = useState([]);
 
+  const getData = async () => {
+    await getDataJSON("posts").then((data) => {
+      if (data == null) {
+        setPostList([]);
+      } else setPostList(data);
+    });
+  };
+
+  // const init = async () => {
+  //   await removeData("posts");
+  // };
+
   useEffect(() => {
-    const getData = async () => {
-      setPostList(await getDataJSON('posts'));
-    }
     getData();
   }, [])
 
-   //await removeData("posts");
+
+
+  //await removeData("posts");
 
   //getPosts();
   return (
@@ -57,69 +68,53 @@ const HomeScreen = (props) => {
               titleStyle={{ color: '#29435c' }}
               type="outline"
               onPress={async () => {
-                if (postList != null) {
-                  setPostList(posts => [
-                    ...posts,
-                    {
-                      name: auth.CurrentUser.name,
-                      email: auth.CurrentUser.email,
-                      date: moment().format("DD MMM, YYYY"),
-                      post: postText,
-                      key: postText,
-                    },
-                  ]);
-                }
-                else {
-                  const arr = [];
-                  arr.push({
+                let arr = [
+                  ...postList,
+                  {
                     name: auth.CurrentUser.name,
                     email: auth.CurrentUser.email,
                     date: moment().format("DD MMM, YYYY"),
                     post: postText,
                     key: postText,
-                  });
+                  },
+                ];
+
+                await storeDataJSON("posts", arr).then(() => {
                   setPostList(arr);
-                }
-                await storeDataJSON('posts', postList);
+                });
+                
                 //alert("Post Successful!");
                 //setPostText("");
 
               }} />
-            <Button buttonStyle={{ borderColor: '#29435c' }}
-              title="Delete Post"
-              titleStyle={{ color: '#29435c' }}
-              type="outline"
-              onPress = {async function(){
-                await removeData("Post");
-              }}
-            />
+
 
           </Card>
           <FlatList
-              data={postList}
-              renderItem={postItem => (
-                <PostComponent
-                  name={postItem.item.name}
-                  date={postItem.item.date}
-                  post={postItem.item.post}
+            data={postList}
+            renderItem={postItem => (
+              <PostComponent
+                name={postItem.item.name}
+                date={postItem.item.date}
+                post={postItem.item.post}
 
-                />
+              />
 
-              )}
-            />
+            )}
+          />
         </View>
       )}
     </AuthContext.Consumer>
-      );
+  );
 };
 
 const styles = StyleSheet.create({
-        textStyle: {
-        fontSize: 30,
+  textStyle: {
+    fontSize: 30,
     color: "blue",
   },
   viewStyle: {
-        flex: 1,
+    flex: 1,
     backgroundColor: '#152a38'
   },
 });

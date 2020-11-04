@@ -33,7 +33,7 @@ const ProfileScreen = (props) => {
 
           <View>
             <Image source={require('../../assets/profile-photo.jpg')} style={styles.logoStyle} />
-            <Text style={{ fontSize: 30, color: '#152a38', marginBottom: 20 }}>Sharmin Naj Mou</Text>
+            <Text style={{ fontSize: 30, color: '#152a38', marginBottom: 20 }}> {auth.CurrentUser.name} </Text>
           </View>
 
           <View style={styles.textViewStyle}>

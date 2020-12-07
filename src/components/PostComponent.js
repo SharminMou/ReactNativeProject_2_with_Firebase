@@ -16,43 +16,43 @@ const PostComponent = (props) => {
 
 
 
-    const getLikeData = async () => {
-        await getDataJSON(props.post.concat("likes")).then((data) => {
-            if (data == null) {
-                setLike(0);
-            } else setLike(data);
-        });
-    };
-    useEffect(() => {
-        getLikeData();
-    }, [])
-    const getCommentData = async () => {
-        await getDataJSON(props.post).then((data) => {
-            if (data == null) {
-                setCommentList([]);
-            } else setCommentList(data);
-        });
-    };
+    // const getLikeData = async () => {
+    //     await getDataJSON(props.post.concat("likes")).then((data) => {
+    //         if (data == null) {
+    //             setLike(0);
+    //         } else setLike(data);
+    //     });
+    // };
+    // useEffect(() => {
+    //     getLikeData();
+    // }, [])
+    // const getCommentData = async () => {
+    //     await getDataJSON(props.post).then((data) => {
+    //         if (data == null) {
+    //             setCommentList([]);
+    //         } else setCommentList(data);
+    //     });
+    // };
 
-    getCommentData();
+    // getCommentData();
 
-    const getNotificationData = async () => {
-        await getDataJSON(notifyUser).then((data) => {
-            if (data == null) {
-                setNotificationList([]);
-            } else setNotificationList(data);
-        });
-    };
+    // const getNotificationData = async () => {
+    //     await getDataJSON(notifyUser).then((data) => {
+    //         if (data == null) {
+    //             setNotificationList([]);
+    //         } else setNotificationList(data);
+    //     });
+    // };
 
 
-    useEffect(() => {
-        getNotificationData();
-    }, [])
+    // useEffect(() => {
+    //     getNotificationData();
+    // }, [])
 
-    let numberOfComments = "";
-    numberOfComments = "Comment(".concat(commentList.length.toString()).concat(")");
-    let likeButton = "";
-    likeButton = "Like(".concat(like.toString()).concat(")");
+    let numberOfComments = "5";
+    //numberOfComments = "Comment(".concat(commentList.length.toString()).concat(")");
+    let likeButton = "9";
+    //likeButton = "Like(".concat(like.toString()).concat(")");
 
     return (
         <AuthContext.Consumer>

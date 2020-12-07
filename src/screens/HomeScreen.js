@@ -6,107 +6,145 @@ import { AuthContext } from "../providers/AuthProvider";
 import PostComponent from "../components/PostComponent";
 import { storeDataJSON, getDataJSON, removeData } from "../functions/AsynchronousStorageFunctions";
 import moment from "moment";
+import * as firebase from "firebase";
+import "firebase/firestore";
+import Loading from '../components/Loading';
 
 const HomeScreen = (props) => {
   const [postText, setPostText] = useState("");
   const [postList, setPostList] = useState([]);
+  const [isLoading, setLoading] = useState(false);
 
-  const getData = async () => {
-    await getDataJSON("posts").then((data) => {
-      if (data == null) {
-        setPostList([]);
-      } else setPostList(data);
-    });
-  };
-
-  // const init = async () => {
-  //   await removeData("posts");
+  // const getData = async () => {
+  //   await getDataJSON("posts").then((data) => {
+  //     if (data == null) {
+  //       setPostList([]);
+  //     } else setPostList(data);
+  //   });
   // };
 
-  useEffect(() => {
-    getData();
-  }, [])
+  // // const init = async () => {
+  // //   await removeData("posts");
+  // // };
 
-
+  // useEffect(() => {
+  //   getData();
+  // }, [])
 
   //await removeData("posts");
 
   //getPosts();
-  return (
-    <AuthContext.Consumer>
-      {(auth) => (
-        <View style={styles.viewStyle}>
-          <Header
-            backgroundColor='#29435c'
-            leftComponent={{
-              icon: "menu",
-              color: "#fff",
-              onPress: function () {
-                props.navigation.toggleDrawer();
-              },
-            }}
-            centerComponent={{ text: "The Office", style: { color: "#fff" } }}
-            rightComponent={{
-              icon: "lock-outline",
-              color: "#fff",
-              onPress: function () {
-                auth.setIsLoggedIn(false);
-                auth.setCurrentUser({});
-              },
-            }}
-          />
-          <Card containerStyle={{ backgroundColor: '#d1d4c9' }}>
-            <Input
-              placeholder="What's On Your Mind?"
-              leftIcon={<Entypo name="pencil" size={24} color="#152a38" />}
-              onChangeText={function (currentInput) {
-                setPostText(currentInput);
+  const loadPosts = async () => {
+    setLoading(true);
+    firebase
+      .firestore()
+      .collection("posts")
+      .orderBy("created_at", "desc")
+      .onSnapshot((querySnapshot) => {
+        setLoading(false);
+        let temp_posts = [];
+        querySnapshot.forEach((doc) => {
+          temp_posts.push({
+            id: doc.id,
+            data: doc.data(),
+          });
+        });
+        setPostList(temp_posts);
+        
+      })
+      .catch((error) => {
+        setLoading(false);
+        alert(error);
+      });
+  };
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  if (isLoading) {
+    return <Loading />;
+  } else {
+    return (
+      <AuthContext.Consumer>
+        {(auth) => (
+          <View style={styles.viewStyle}>
+            <Header
+              backgroundColor='#29435c'
+              leftComponent={{
+                icon: "menu",
+                color: "#fff",
+                onPress: function () {
+                  props.navigation.toggleDrawer();
+                },
+              }}
+              centerComponent={{ text: "The Office", style: { color: "#fff" } }}
+              rightComponent={{
+                icon: "lock-outline",
+                color: "#fff",
+                onPress: function () {
+                  auth.setIsLoggedIn(false);
+                  auth.setCurrentUser({});
+                },
               }}
             />
-            <Button buttonStyle={{ borderColor: '#29435c' }}
-              title="Post"
-              titleStyle={{ color: '#29435c' }}
-              type="outline"
-              onPress={async () => {
-                let arr = [
-                  ...postList,
-                  {
-                    name: auth.CurrentUser.name,
-                    email: auth.CurrentUser.email,
-                    date: moment().format("DD MMM, YYYY"),
-                    post: postText,
-                    key: postText,
-                  },
-                ];
-
-                await storeDataJSON("posts", arr).then(() => {
-                  setPostList(arr);
-                });
-                
-                //alert("Post Successful!");
-                //setPostText("");
-
-              }} />
-
-
-          </Card>
-          <FlatList
-            data={postList}
-            renderItem={postItem => (
-              <PostComponent
-                name={postItem.item.name}
-                date={postItem.item.date}
-                post={postItem.item.post}
-                email={postItem.item.email}
+            <Card containerStyle={{ backgroundColor: '#d1d4c9' }}>
+              <Input
+                placeholder="What's On Your Mind?"
+                leftIcon={<Entypo name="pencil" size={24} color="#152a38" />}
+                onChangeText={function (currentInput) {
+                  setPostText(currentInput);
+                }}
+              />
+              <Button buttonStyle={{ borderColor: '#29435c' }}
+                title="Post"
+                titleStyle={{ color: '#29435c' }}
+                type="outline"
+                onPress={function () {
+                  setLoading(true);
+                  firebase
+                    .firestore()
+                    .collection("posts")
+                    .add({
+                      userId: auth.CurrentUser.uid,
+                      body: postText,
+                      author: auth.CurrentUser.displayName,
+                      created_at: firebase.firestore.Timestamp.now(),
+                      likes: [],
+                      comments: [],
+                    })
+                    .then(() => {
+                      setLoading(false);
+                      alert("Post created Successfully!");
+                    })
+                    .catch((error) => {
+                      setLoading(false);
+                      alert(error);
+                    });
+                }}
 
               />
 
-            )}
-          />
-        </View>
-      )}
-    </AuthContext.Consumer>
-  );
+
+            </Card>
+            <FlatList
+              data={postList}
+              renderItem={({ item }) => {
+                return (
+                  <PostComponent
+                    name={item.data.author}
+                    email={item.id}
+                    post={item.data.body}
+                    date={item.data.created_at.toDate().toString()}
+                  />
+                );
+              }}
+            />
+          </View>
+        )}
+      </AuthContext.Consumer>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

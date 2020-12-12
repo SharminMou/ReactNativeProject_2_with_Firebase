@@ -15,25 +15,6 @@ const HomeScreen = (props) => {
   const [postList, setPostList] = useState([]);
   const [isLoading, setLoading] = useState(false);
 
-  // const getData = async () => {
-  //   await getDataJSON("posts").then((data) => {
-  //     if (data == null) {
-  //       setPostList([]);
-  //     } else setPostList(data);
-  //   });
-  // };
-
-  // // const init = async () => {
-  // //   await removeData("posts");
-  // // };
-
-  // useEffect(() => {
-  //   getData();
-  // }, [])
-
-  //await removeData("posts");
-
-  //getPosts();
   const loadPosts = async () => {
     setLoading(true);
     firebase
@@ -50,7 +31,7 @@ const HomeScreen = (props) => {
           });
         });
         setPostList(temp_posts);
-        
+
       })
       .catch((error) => {
         setLoading(false);
@@ -83,10 +64,20 @@ const HomeScreen = (props) => {
                 icon: "lock-outline",
                 color: "#fff",
                 onPress: function () {
-                  auth.setIsLoggedIn(false);
-                  auth.setCurrentUser({});
-                },
-              }}
+                  firebase
+                    .auth()
+                    .signOut()
+                    .then(() => {
+                      auth.setIsLoggedIn(false);
+                      auth.setCurrentUser({});
+                    })
+                    .catch((error) => {
+                      alert(error);
+                    })
+
+                }
+              }
+              }
             />
             <Card containerStyle={{ backgroundColor: '#d1d4c9' }}>
               <Input
@@ -110,12 +101,13 @@ const HomeScreen = (props) => {
                       body: postText,
                       author: auth.CurrentUser.displayName,
                       created_at: firebase.firestore.Timestamp.now(),
-                      likes: [],
                       comments: [],
+                      likers: [],
                     })
-                    .then(() => {
+                    .then(function (doc) {
                       setLoading(false);
-                      alert("Post created Successfully!");
+                      let giveAlert = "Post created with ID: ";
+                      alert(giveAlert.concat(doc.ZE.path.segments[1]));
                     })
                     .catch((error) => {
                       setLoading(false);
@@ -136,6 +128,9 @@ const HomeScreen = (props) => {
                     email={item.id}
                     post={item.data.body}
                     date={item.data.created_at.toDate().toString()}
+                    authorID={item.data.userId}
+                    postID={item.id}
+                    userID={auth.CurrentUser.uid}
                   />
                 );
               }}

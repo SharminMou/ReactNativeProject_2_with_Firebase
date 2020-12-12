@@ -6,163 +6,214 @@ import { AuthContext } from "../providers/AuthProvider";
 import CommentComponent from "../components/CommentComponent";
 import { storeDataJSON, getDataJSON, removeData } from "../functions/AsynchronousStorageFunctions";
 import moment from "moment";
+import Loading from '../components/Loading';
+import * as firebase from "firebase";
+import "firebase/firestore";
 
 const PostScreen = (props) => {
     //console.log(props);
     const [commentText, setCommentText] = useState("");
     const [commentList, setCommentList] = useState([]);
     const [notificationList, setNotificationList] = useState([]);
-    let notifyUser = props.route.params.email.concat("notify");
-    const getCommentData = async () => {
-        await getDataJSON(props.route.params.post).then((data) => {
-            if (data == null) {
-                setCommentList([]);
-            } else setCommentList(data);
-        });
-    };
+    const [isLoading, setIsLoading] = useState(false);
 
-    const getNotificationData = async () => {
-        await getDataJSON(notifyUser).then((data) => {
-            if (data == null) {
-                setNotificationList([]);
-            } else setNotificationList(data);
-        });
-    };
+
+    const loadComments = async () => {
+        setIsLoading(true);
+        firebase
+            .firestore()
+            .collection('posts')
+            .doc(props.route.params.postID)
+            .onSnapshot((querySnapShot) => {
+                setIsLoading(false);
+                setCommentList(querySnapShot.data().comments);
+            })
+            .catch((error) => {
+                setIsLoading(false);
+                alert(error);
+            })
+    }
+
+    const loadNotificationData = async () => {
+        setIsLoading(true);
+        firebase
+            .firestore()
+            .collection('users')
+            .doc(props.route.params.authorID)
+            .onSnapshot((querySnapShot) => {
+                setIsLoading(false);
+                setNotificationList(querySnapShot.data().notifications);
+            })
+            .catch((error) => {
+                setIsLoading(false);
+                alert(error);
+            })
+    }
 
     useEffect(() => {
-        getCommentData();
+        loadComments();
+        loadNotificationData();
     }, [])
-    useEffect(() => {
-        getNotificationData();
-    }, [notificationList])
 
-    return (
-        <AuthContext.Consumer>
-            {(auth) => (
-                <View style={styles.viewStyle}>
-                    <Header
-                        backgroundColor='#29435c'
-                        leftComponent={{
-                            icon: "menu",
-                            color: "#fff",
-                            onPress: function () {
-                                props.navigation.toggleDrawer();
-                            },
-                        }}
-                        centerComponent={{ text: "The Office", style: { color: "#fff" } }}
-                        rightComponent={{
-                            icon: "lock-outline",
-                            color: "#fff",
-                            onPress: function () {
-                                auth.setIsLoggedIn(false);
-                                auth.setCurrentUser({});
-                            },
-                        }}
 
-                    />
-                    <View style={{ alignItems: 'center' }}>
-                        <Card containerStyle={{ backgroundColor: '#d1d4c9', width: "92%" }}>
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <Avatar
-                                    containerStyle={{ backgroundColor: "#92817a" }}
-                                    size='medium'
-                                    rounded
-                                    icon={{ name: "user", type: "font-awesome", color: "black" }}
-                                    activeOpacity={1}
-                                />
-                                <Text h4Style={{ padding: 10 }} h4>
-                                    {props.route.params.name}
+
+    if (isLoading) {
+        return <Loading />;
+    } else {
+        return (
+            <AuthContext.Consumer>
+                {(auth) => (
+                    <View style={styles.viewStyle}>
+                        <Header
+                            backgroundColor='#29435c'
+                            leftComponent={{
+                                icon: "menu",
+                                color: "#fff",
+                                onPress: function () {
+                                    props.navigation.toggleDrawer();
+                                },
+                            }}
+                            centerComponent={{ text: "The Office", style: { color: "#fff" } }}
+                            rightComponent={{
+                                icon: "lock-outline",
+                                color: "#fff",
+                                onPress: function () {
+                                    auth.setIsLoggedIn(false);
+                                    auth.setCurrentUser({});
+                                },
+                            }}
+
+                        />
+                        <View style={{ alignItems: 'center' }}>
+                            <Card containerStyle={{ backgroundColor: '#d1d4c9', width: "92%" }}>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Avatar
+                                        containerStyle={{ backgroundColor: "#92817a" }}
+                                        size='medium'
+                                        rounded
+                                        icon={{ name: "user", type: "font-awesome", color: "black" }}
+                                        activeOpacity={1}
+                                    />
+                                    <Text h4Style={{ padding: 10 }} h4>
+                                        {props.route.params.name}
+                                    </Text>
+                                </View>
+                                <Text style={{ fontStyle: "italic" }}> Posted on {props.route.params.date} </Text>
+                                <Text
+                                    style={{
+                                        paddingVertical: 10,
+                                    }}
+                                >
+                                    {props.route.params.post}
                                 </Text>
-                            </View>
-                            <Text style={{ fontStyle: "italic" }}> Posted on {props.route.params.date} </Text>
-                            <Text
-                                style={{
-                                    paddingVertical: 10,
-                                }}
-                            >
-                                {props.route.params.post}
-                            </Text>
 
 
-                            <Input style={{ fontSize: 15 }}
-                                placeholder="Write Something!"
-                                leftIcon={<Entypo name="pencil" size={20} color="#152a38" />}
-                                onChangeText={function (currentInput) {
-                                    setCommentText(currentInput);
-                                }}
-                            />
-                            <Button buttonStyle={{ borderColor: '#29435c' }}
-                                title="Comment"
-                                titleStyle={{ color: '#29435c' }}
-                                type="outline"
-                                onPress={async () => {
-                                    let arr = [
-                                        ...commentList,
-                                        {
-                                            name: auth.CurrentUser.name,
-                                            email: auth.CurrentUser.email,
-                                            date: moment().format("DD MMM, YYYY"),
-                                            comment: commentText,
-                                            key: commentText,
-                                        },
-                                    ];
+                                <Input style={{ fontSize: 15 }}
+                                    placeholder="Write Something!"
+                                    leftIcon={<Entypo name="pencil" size={20} color="#152a38" />}
+                                    onChangeText={function (currentInput) {
+                                        setCommentText(currentInput);
+                                    }}
+                                />
+                                <Button buttonStyle={{ borderColor: '#29435c' }}
+                                    title="Comment"
+                                    titleStyle={{ color: '#29435c' }}
+                                    type="outline"
+                                    onPress={function () {
+                                        setIsLoading(true);
+                                        firebase
+                                            .firestore()
+                                            .collection('posts')
+                                            .doc(props.route.params.postID)
+                                            .set(
+                                                {
+                                                    comments: [...commentList,
+                                                    {
+                                                        comment: commentText,
+                                                        commented_by: auth.CurrentUser.displayName,
+                                                        commented_at: firebase.firestore.Timestamp.now().toString(),
+                                                        commenting_date: moment().format("DD MMM, YYYY")
+                                                    }]
+                                                },
+                                                { merge: true }
+                                            )
+                                            .then(() => {
+                                                setIsLoading(false);
+                                            })
+                                            .catch((error) => {
+                                                setIsLoading(false);
+                                                alert(error);
+                                            })
 
-                                    await storeDataJSON(props.route.params.post, arr).then(() => {
-                                        setCommentList(arr);
-                                    });
+                                        if (props.authorID != auth.CurrentUser.uid) {
+                                            firebase
+                                                .firestore()
+                                                .collection('users')
+                                                .doc(props.route.params.authorID)
+                                                .set(
+                                                    {
+                                                        notifications: [
+                                                            ...notificationList,
+                                                            {
+                                                                type: "comment",
+                                                                notification_from: auth.CurrentUser.displayName,
+                                                                notified_at: firebase.firestore.Timestamp.now().toString(),
+                                                                notifying_date: moment().format("DD MMM, YYYY"),
+                                                                posting_date: props.route.params.date,
+                                                                postID: props.route.params.postID,
+                                                                authorID: props.route.params.authorID,
+                                                                post: props.route.params.post,
+                                                                name: props.route.params.name,
+                                                            }]
+                                                    },
+                                                    { merge: true }
+                                                )
+                                                .then(() => {
+                                                    setIsLoading(false);
+                                                })
+                                                .catch((error) => {
+                                                    setIsLoading(false);
+                                                    alert(error);
+                                                })
+                                        }
 
-                                    if (auth.CurrentUser.email != props.route.params.email) {
-                                        let arr2 = [
-                                            ...notificationList,
-                                            {
-                                                name: props.route.params.name,
-                                                email: props.route.params.email,
-                                                date: moment().format("DD MMM, YYYY"),
-                                                post: props.route.params.post,
-                                                notification: auth.CurrentUser.name.concat(" commented on your post"),
-                                                key: commentText,
-                                                type: "comment",
-                                            },
-                                        ];
 
 
-                                        await storeDataJSON(notifyUser, arr2).then(() => {
-                                            setNotificationList(arr2);
-                                        });
+
                                     }
+                                    }
+                                />
+
+                            </Card>
+
+                        </View>
 
 
-                                }} />
+                        <FlatList
+                            data={commentList}
+                            renderItem={commentItem => (
+                                <CommentComponent
+                                    name={commentItem.item.commented_by}
+                                    date={commentItem.item.commenting_date}
+                                    comment={commentItem.item.comment}
 
-                        </Card>
+                                />
+
+                            )}
+                        />
+
+                        <Card.Divider />
 
                     </View>
-
-
-                    <FlatList
-                        data={commentList}
-                        renderItem={commentItem => (
-                            <CommentComponent
-                                name={commentItem.item.name}
-                                date={commentItem.item.date}
-                                comment={commentItem.item.comment}
-
-                            />
-
-                        )}
-                    />
-
-                    <Card.Divider />
-
-                </View>
-            )}
-        </AuthContext.Consumer>
-    );
+                )}
+            </AuthContext.Consumer>
+        );
+    }
 };
 
 const styles = StyleSheet.create({

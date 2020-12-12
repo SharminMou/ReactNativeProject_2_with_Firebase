@@ -74,25 +74,27 @@ const SignUpScreen = (props) => {
                                                 name: Name,
                                                 sid: SID,
                                                 email: Email,
+                                                notifications: [],
                                             })
                                             .then(() => {
                                                 setIsLoading(false);
-                                                alert("Account created successfully!");
+                                                let giveAlert = "Account created successfully with ID: ";
+                                                alert(giveAlert.concat(userCreds.user.uid));
                                                 props.navigation.navigate("SignIn");
 
                                             })
-                                    
+
+                                            .catch((error) => {
+                                                setIsLoading(false);
+                                                alert(error);
+                                            });
+                                    })
                                     .catch((error) => {
                                         setIsLoading(false);
                                         alert(error);
                                     });
-                            })
-                                    .catch((error) => {
-                                    setIsLoading(false);
-                                        alert(error);
-                                    });
                             } else {
-                        alert("Fields can not be empty!");
+                                alert("Fields can not be empty!");
                             }
                         }}
                     />

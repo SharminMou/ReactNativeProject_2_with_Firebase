@@ -48,10 +48,11 @@ const SignInScreen = (props) => {
                                     firebase
                                         .auth()
                                         .signInWithEmailAndPassword(Email, Password)
-                                        .then((userCreds) => {
+                                        .then( async (userCreds) => {
                                             setIsLoading(false);
                                             auth.setIsLoggedIn(true);
                                             auth.setCurrentUser(userCreds.user);
+                                            await storeDataJSON("mail", userCreds.user.uid)
                                         })
                                         .catch((error) => {
                                             setIsLoading(false);

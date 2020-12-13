@@ -74,6 +74,7 @@ const SignUpScreen = (props) => {
                                                 name: Name,
                                                 sid: SID,
                                                 email: Email,
+                                                photoURI: "N/A",
                                                 notifications: [],
                                             })
                                             .then(() => {

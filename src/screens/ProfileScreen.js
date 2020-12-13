@@ -4,7 +4,8 @@ import { Input, Button, Card, Tile, Text, Header, Avatar } from 'react-native-el
 import { MaterialIcons, Feather, AntDesign } from '@expo/vector-icons';
 import { AuthContext } from "../providers/AuthProvider";
 import ChoosePhotoComponent from "../components/ChoosePhotoComponent";
-import { removeData } from "../functions/AsynchronousStorageFunctions";
+import * as firebase from "firebase";
+import "firebase/firestore";
 
 const ProfileScreen = (props) => {
   //console.log(props);
@@ -35,7 +36,8 @@ const ProfileScreen = (props) => {
 
           <View>
             {/* <Image source={require('../../assets/profile-photo.jpg')} style={styles.logoStyle} /> */}
-            <ChoosePhotoComponent/>
+            <ChoosePhotoComponent userID={auth.CurrentUser.uid} />
+
             <Text style={{ fontSize: 30, color: '#152a38', marginBottom: 20 }}> {auth.CurrentUser.name} </Text>
           </View>
 
@@ -49,11 +51,21 @@ const ProfileScreen = (props) => {
             title=' Delete profile'
             titleStyle={{ color: '#d1d4c9' }}
             type='solid'
-            onPress= { function () {
-                removeData(auth.CurrentUser.email);
-                auth.setIsLoggedIn(false);
-                auth.setCurrentUser({});
-              }}
+            onPress={function () {
+              firebase
+                .firestore()
+                .collection('users')
+                .doc(auth.CurrentUser.uid)
+                .delete()
+                .then(() => {
+                  auth.setIsLoggedIn(false);
+                  auth.setCurrentUser({});
+                  //props.navigation.navigate("SignIn");
+                })
+                .catch((error) => {
+                  alert(error);
+                })
+            }}
           />
         </View>
       )}

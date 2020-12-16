@@ -13,21 +13,36 @@ const NotificationScreen = (props) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState("");
 
-  const loadNotificationData = async () => {
-    setIsLoading(true);
-    firebase
-        .firestore()
-        .collection('users')
-        .doc(email)
-        .onSnapshot((querySnapShot) => {
-            setIsLoading(false);
-            setNotificationList(querySnapShot.data().notifications);
-        })
-        .catch((error) => {
-            setIsLoading(false);
-            alert(error);
-        })
+const loadNotificationData = async () => {
+
+  setIsLoading(true);
+  firebase
+      .firestore()
+      .collection('users')
+      .doc(email)
+      .collection("notifications")
+      .onSnapshot((querySnapShot) => {
+          setIsLoading(false);
+          let temp = [];
+          querySnapShot.forEach((doc) => {
+              temp.push(
+                  {
+                      id: doc.id,
+                      data: doc.data(),
+                  }
+              );
+
+          });
+
+          setNotificationList(temp);
+      })
+      .catch((error) => {
+          setIsLoading(false);
+          alert(error);
+      })
 }
+
+
 
 const getEmailData = async () => {
   await getDataJSON("mail").then((data) => {
@@ -81,13 +96,13 @@ useEffect(() => {
               renderItem={notificationItem => (
                 <View style={{ alignItems: "center" }}>
                   <NotificationComponent
-                    name={notificationItem.item.name}
-                    date={notificationItem.item.posting_date}
-                    post={notificationItem.item.post}
-                    postID={notificationItem.item.postID}
-                    authorID={notificationItem.item.authorID}
-                    notificationFrom={notificationItem.item.notification_from}
-                    type={notificationItem.item.type}
+                    name={notificationItem.item.data.name}
+                    date={notificationItem.item.data.posting_date}
+                    post={notificationItem.item.data.post}
+                    postID={notificationItem.item.data.postID}
+                    authorID={notificationItem.item.data.authorID}
+                    notificationFrom={notificationItem.item.data.notification_from}
+                    type={notificationItem.item.data.type}
                   />
                   <Card.Divider />
                 </View>

@@ -38,7 +38,7 @@ const CommentOnPostStack = createStackNavigator();
 
 const AppDrawerScreen = () => {
   return (
-    <AppDrawer.Navigator drawerStyle={{ backgroundColor: '#29435c' }}>
+    <AppDrawer.Navigator drawerStyle={{ backgroundColor: '#d1d4c9' }}>
       <AppDrawer.Screen name="Home" component={HomeTabScreen} />
       <AppDrawer.Screen name="Profile" component={ProfileScreen} />
     </AppDrawer.Navigator>

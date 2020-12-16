@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View, StyleSheet, FlatList } from "react-native";
+import { ScrollView, View, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
 import { Card, Button, Text, Avatar, Input, Header } from "react-native-elements";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { AuthContext } from "../providers/AuthProvider";
@@ -18,15 +18,30 @@ const PostScreen = (props) => {
     const [isLoading, setIsLoading] = useState(false);
 
 
+
+
     const loadComments = async () => {
+
         setIsLoading(true);
         firebase
             .firestore()
             .collection('posts')
             .doc(props.route.params.postID)
+            .collection("postComments")
             .onSnapshot((querySnapShot) => {
                 setIsLoading(false);
-                setCommentList(querySnapShot.data().comments);
+                let temp = [];
+                querySnapShot.forEach((doc) => {
+                    temp.push(
+                        {
+                            id: doc.id,
+                            data: doc.data(),
+                        }
+                    );
+
+                });
+
+                setCommentList(temp);
             })
             .catch((error) => {
                 setIsLoading(false);
@@ -34,26 +49,26 @@ const PostScreen = (props) => {
             })
     }
 
-    const loadNotificationData = async () => {
-        setIsLoading(true);
-        firebase
-            .firestore()
-            .collection('users')
-            .doc(props.route.params.authorID)
-            .onSnapshot((querySnapShot) => {
-                setIsLoading(false);
-                setNotificationList(querySnapShot.data().notifications);
-            })
-            .catch((error) => {
-                setIsLoading(false);
-                alert(error);
-            })
-    }
+    // const loadNotificationData = async () => {
+    //     setIsLoading(true);
+    //     firebase
+    //         .firestore()
+    //         .collection('users')
+    //         .doc(props.route.params.authorID)
+    //         .onSnapshot((querySnapShot) => {
+    //             setIsLoading(false);
+    //             setNotificationList(querySnapShot.data().notifications);
+    //         })
+    //         .catch((error) => {
+    //             setIsLoading(false);
+    //             alert(error);
+    //         })
+    // }
 
     useEffect(() => {
         loadComments();
-        loadNotificationData();
-    }, [])
+        // loadNotificationData();
+    }, []);
 
 
 
@@ -130,17 +145,16 @@ const PostScreen = (props) => {
                                             .firestore()
                                             .collection('posts')
                                             .doc(props.route.params.postID)
-                                            .set(
+                                            .collection("postComments")
+                                            .add(
                                                 {
-                                                    comments: [...commentList,
-                                                    {
-                                                        comment: commentText,
-                                                        commented_by: auth.CurrentUser.displayName,
-                                                        commented_at: firebase.firestore.Timestamp.now().toString(),
-                                                        commenting_date: moment().format("DD MMM, YYYY")
-                                                    }]
+                                                    userId: auth.CurrentUser.uid,
+                                                    comment: commentText,
+                                                    commented_by: auth.CurrentUser.displayName,
+                                                    commented_at: firebase.firestore.Timestamp.now().toString(),
+                                                    commenting_date: moment().format("DD MMM, YYYY")
+
                                                 },
-                                                { merge: true }
                                             )
                                             .then(() => {
                                                 setIsLoading(false);
@@ -150,28 +164,26 @@ const PostScreen = (props) => {
                                                 alert(error);
                                             })
 
+
                                         if (props.authorID != auth.CurrentUser.uid) {
                                             firebase
                                                 .firestore()
                                                 .collection('users')
                                                 .doc(props.route.params.authorID)
-                                                .set(
+                                                .collection("notifications")
+                                                .add(
                                                     {
-                                                        notifications: [
-                                                            ...notificationList,
-                                                            {
-                                                                type: "comment",
-                                                                notification_from: auth.CurrentUser.displayName,
-                                                                notified_at: firebase.firestore.Timestamp.now().toString(),
-                                                                notifying_date: moment().format("DD MMM, YYYY"),
-                                                                posting_date: props.route.params.date,
-                                                                postID: props.route.params.postID,
-                                                                authorID: props.route.params.authorID,
-                                                                post: props.route.params.post,
-                                                                name: props.route.params.name,
-                                                            }]
+                                                        type: "comment",
+                                                        notification_from: auth.CurrentUser.displayName,
+                                                        notified_at: firebase.firestore.Timestamp.now().toString(),
+                                                        notifying_date: moment().format("DD MMM, YYYY"),
+                                                        posting_date: props.route.params.date,
+                                                        postID: props.route.params.postID,
+                                                        authorID: props.route.params.authorID,
+                                                        post: props.route.params.post,
+                                                        name: props.route.params.name,
+
                                                     },
-                                                    { merge: true }
                                                 )
                                                 .then(() => {
                                                     setIsLoading(false);
@@ -196,15 +208,59 @@ const PostScreen = (props) => {
 
                         <FlatList
                             data={commentList}
-                            renderItem={commentItem => (
-                                <CommentComponent
-                                    name={commentItem.item.commented_by}
-                                    date={commentItem.item.commenting_date}
-                                    comment={commentItem.item.comment}
+                            renderItem={({ item }) => {
+                                return (
 
-                                />
+                                    <TouchableOpacity
+                                        onLongPress={() => {
+                                            Alert.alert(
+                                                "Delete The Comment?",
+                                                "Press ok to Delete",
+                                                [
+                                                    {
+                                                        text: "Cancel",
+                                                        onPress: () => console.log("Cancel Pressed"),
+                                                        style: "cancel"
+                                                    },
+                                                    {
+                                                        text: "OK", onPress: () => {
 
-                            )}
+                                                            if (auth.CurrentUser.uid == item.data.userId) {
+                                                                //console.log(item.id);
+
+                                                                firebase
+                                                                    .firestore()
+                                                                    .collection("posts")
+                                                                    .doc(props.route.params.postID)
+                                                                    .collection("postComments")
+                                                                    .doc(item.id).delete()
+
+                                                            }
+
+                                                            else {
+                                                                alert("You're not the author of this post")
+                                                            }
+                                                        }
+
+
+
+                                                    }
+                                                ],
+                                                { cancelable: false }
+                                            );
+                                        }}
+                                    >
+
+                                        <CommentComponent
+                                            name={item.data.commented_by}
+                                            date={item.data.commenting_date}
+                                            comment={item.data.comment}
+
+                                        />
+                                    </TouchableOpacity>
+                                );
+
+                            }}
                         />
 
                         <Card.Divider />

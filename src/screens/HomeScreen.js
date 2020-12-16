@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View, StyleSheet, FlatList } from "react-native";
+import { ScrollView, View, StyleSheet, FlatList, Alert } from "react-native";
 import { Card, Button, Text, Avatar, Input, Header } from "react-native-elements";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { AuthContext } from "../providers/AuthProvider";
@@ -9,6 +9,7 @@ import moment from "moment";
 import * as firebase from "firebase";
 import "firebase/firestore";
 import Loading from '../components/Loading';
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const HomeScreen = (props) => {
   const [postText, setPostText] = useState("");
@@ -17,6 +18,7 @@ const HomeScreen = (props) => {
 
   const loadPosts = async () => {
     setLoading(true);
+
     firebase
       .firestore()
       .collection("posts")
@@ -122,16 +124,48 @@ const HomeScreen = (props) => {
             <FlatList
               data={postList}
               renderItem={({ item }) => {
+
                 return (
-                  <PostComponent
-                    name={item.data.author}
-                    email={item.id}
-                    post={item.data.body}
-                    date={item.data.created_at.toDate().toString()}
-                    authorID={item.data.userId}
-                    postID={item.id}
-                    userID={auth.CurrentUser.uid}
-                  />
+
+                  <TouchableOpacity
+                    onLongPress={
+                      () => {
+                        Alert.alert("Delete Post?", "Press OK to Delete",
+                          [
+                            {
+                              text: "Cancel",
+                              onPress: () => console.log("Cancelled"),
+                              style: "cancel"
+
+                            },
+                            {
+                              text: "OK", onPress: () => {
+                                if (auth.CurrentUser.uid == item.data.userId) {
+                                  firebase
+                                    .firestore()
+                                    .collection("posts").doc(item.id).delete()
+                                }
+                                else {
+                                  alert("You're not the author of this post")
+                                }
+                              }
+                            }
+                          ],
+                          { cancelable: false }
+                        );
+                      }}
+                  >
+
+                    <PostComponent
+                      name={item.data.author}
+                      email={item.id}
+                      post={item.data.body}
+                      date={item.data.created_at.toDate().toString()}
+                      authorID={item.data.userId}
+                      postID={item.id}
+                      userID={auth.CurrentUser.uid}
+                    />
+                  </TouchableOpacity>
                 );
               }}
             />

@@ -58,13 +58,14 @@ const ProfileScreen = (props) => {
                 .doc(auth.CurrentUser.uid)
                 .delete()
                 .then(() => {
-                  auth.setIsLoggedIn(false);
-                  auth.setCurrentUser({});
+            
                   //props.navigation.navigate("SignIn");
                 })
                 .catch((error) => {
                   alert(error);
                 })
+                auth.setIsLoggedIn(false);
+                auth.setCurrentUser({});
             }}
           />
         </View>
